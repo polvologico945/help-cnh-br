@@ -13,14 +13,15 @@ export function SVGBoundary() {
       >
         <defs>
           <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <radialGradient id="glow" cx="50%" cy="20%" r="60%">
-              <stop offset="0%" stopColor="#0A31A6" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#040814" stopOpacity="0" />
-            </radialGradient>
             <stop offset="0%" stopColor="#081235" />
             <stop offset="60%" stopColor="#050A1C" />
             <stop offset="100%" stopColor="#03060F" />
           </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="20%" r="60%">
+            <stop offset="0%" stopColor="#0A31A6" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#040814" stopOpacity="0" />
+          </radialGradient>
+
           <linearGradient id="asphalt" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#1b2030" />
             <stop offset="100%" stopColor="#2f3542" />
