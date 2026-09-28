@@ -1,4 +1,6 @@
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import { SERVICES, type Category, type ServiceKey } from "@/lib/mock/types";
 
 /** Onboarding em modal com backdrop-blur: escolha de serviço e categoria. */
@@ -11,72 +13,84 @@ export function OnboardingModal({
   const [category, setCategory] = useState<Category | null>(null);
 
   const keys = Object.keys(SERVICES) as ServiceKey[];
+  const categories = service ? SERVICES[service].categories : [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xl">
-      <div className="w-full max-w-3xl rounded-2xl glass-panel p-6 sm:p-8">
-        <p className="text-xs uppercase tracking-[0.35em] text-accent">Onboarding</p>
-        <h2 className="mt-2 text-2xl sm:text-3xl">Qual serviço você precisa?</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          A escolha define quais categorias de CNH ficam disponíveis para você.
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 px-4 py-8 backdrop-blur-xl">
+      <div className="glass-panel w-full max-w-2xl overflow-hidden rounded-3xl p-6 sm:p-9">
+        <p className="text-caption text-brand-yellow">Primeiro acesso</p>
+        <h2 className="mt-3 font-display text-3xl leading-tight text-foreground sm:text-4xl">
+          Qual serviço você precisa?
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Sua escolha define as categorias de CNH disponíveis para você.
         </p>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="mt-7 grid gap-3 sm:grid-cols-3">
           {keys.map((key) => {
             const item = SERVICES[key];
             const selected = service === key;
             return (
               <button
                 key={key}
+                type="button"
                 onClick={() => {
                   setService(key);
                   setCategory(null);
                 }}
-                className={`rounded-xl border p-4 text-left transition-all duration-200 ${
+                className={`group rounded-2xl border p-4 text-left transition-all duration-300 ${
                   selected
-                    ? "border-accent bg-accent/15 shadow-glow"
-                    : "border-border bg-white/5 hover:-translate-y-0.5 hover:border-accent/60"
+                    ? "border-brand-green bg-brand-green/15 shadow-glow-green"
+                    : "border-border/60 bg-white/5 hover:-translate-y-1 hover:border-brand-yellow/60"
                 }`}
               >
-                <p className="font-display text-base">{item.label}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
-                <p className="mt-3 text-xs text-accent">Categorias: {item.categories.join(", ")}</p>
+                <span className="block text-sm font-semibold text-foreground">{item.label}</span>
+                <span className="mt-2 block text-xs text-muted-foreground">{item.description}</span>
+                <span className="mt-3 block text-xs text-brand-yellow/80">
+                  Categorias: {item.categories.join(", ")}
+                </span>
               </button>
             );
           })}
         </div>
 
-        {service ? (
-          <div className="mt-6">
-            <p className="text-sm font-medium">Escolha a categoria</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {SERVICES[service].categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setCategory(cat)}
-                  className={`h-11 min-w-14 rounded-lg border px-4 font-display text-sm transition-all ${
-                    category === cat
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-white/5 hover:border-primary/70"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+        <div
+          className={`mt-7 transition-all duration-500 ${
+            service ? "max-h-64 opacity-100" : "pointer-events-none max-h-0 opacity-0"
+          }`}
+        >
+          <p className="text-caption text-muted-foreground">Categoria</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategory(cat)}
+                className={`h-12 min-w-14 rounded-xl border px-4 text-base font-semibold transition-all ${
+                  category === cat
+                    ? "border-brand-yellow bg-brand-yellow text-black"
+                    : "border-border/60 bg-white/5 text-foreground hover:border-brand-yellow/70"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
-        ) : null}
+        </div>
 
         <div className="mt-8 flex justify-end">
-          <button
+          <Button
+            variant="hero"
+            size="lg"
             disabled={!service || !category}
             onClick={() => service && category && onConfirm(service, category)}
-            className="btn-primary disabled:cursor-not-allowed disabled:opacity-40 hover:not-disabled:-translate-y-0.5"
           >
             Continuar
-          </button>
+          </Button>
         </div>
       </div>
     </div>
   );
 }
+
+export default OnboardingModal;
