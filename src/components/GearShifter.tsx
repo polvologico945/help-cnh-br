@@ -50,6 +50,7 @@ type Point = { x: number; y: number };
 
 // ---------- Geometria (viewBox 200x200) ----------
 const COLS = [60, 100, 140] as const;
+const SCREW_POSITIONS = [[30, 30], [170, 30], [30, 170], [170, 170]] as const;
 const TOP = 54;
 const MID = 100; // linha do ponto morto
 const BOT = 146;
@@ -402,12 +403,7 @@ export function GearShifter({
             fill={`url(#${uid}-plate)`}
             stroke="rgba(255,255,255,0.08)"
           />
-          {([
-            [30, 30],
-            [170, 30],
-            [30, 170],
-            [170, 170],
-          ] as const).map(([cx, cy]) => (
+          {SCREW_POSITIONS.map(([cx, cy]) => (
             <g key={`${cx}-${cy}`}>
               <circle cx={cx} cy={cy} r={3.5} fill="#0b0b0d" stroke="rgba(255,255,255,0.12)" />
               <path

@@ -6,9 +6,7 @@ import { z } from "zod";
 const tokenSchema = z.string().uuid();
 
 export const issueDemoInvitation = createServerFn({ method: "POST" })
-  .validator(
-    z.object({ studentId: z.string().uuid(), studentName: z.string().min(2).max(120) }),
-  )
+  .validator(z.object({ studentId: z.string().uuid(), studentName: z.string().min(2).max(120) }))
   .handler(async ({ data }) => {
     const { issueInvitation } = await import("./linking-store.server");
     return issueInvitation(data.studentId, data.studentName);
@@ -29,9 +27,7 @@ export const getDemoInvitationStatus = createServerFn({ method: "POST" })
   });
 
 export const approveDemoInvitation = createServerFn({ method: "POST" })
-  .validator(
-    z.object({ token: tokenSchema, instructorName: z.string().trim().min(3).max(80) }),
-  )
+  .validator(z.object({ token: tokenSchema, instructorName: z.string().trim().min(3).max(80) }))
   .handler(async ({ data }) => {
     const { approveInvitation } = await import("./linking-store.server");
     return approveInvitation(data.token, data.instructorName);
