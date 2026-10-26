@@ -230,8 +230,35 @@ const SEED_STUDENTS: AdminStudent[] = [
   },
 ];
 
+const ADMIN_STUDENTS_KEY = "viasegura.demo.admin.students.v1";
+
 export function seedAdminStudents(): AdminStudent[] {
-  return [...SEED_STUDENTS].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  if (typeof window === "undefined") return [];
+  const examples = SEED_STUDENTS.map((student) => ({ ...student, source: "exemplo" as const }));
+  const enrolled = readDb()
+    .filter((user) => user.service !== null)
+    .map((user) => ({
+      id: user.id,
+      name: user.name,
+      cpf: user.cpf,
+      progress: user.progress,
+      service: user.service!,
+      instructorName: user.instructorName,
+      source: "navegador" as const,
+    }));
+  try {
+    const saved = window.localStorage.getItem(ADMIN_STUDENTS_KEY);
+    if (saved) return JSON.parse(saved) as AdminStudent[];
+  } catch {
+    // Reinicia o conjunto de demonstracao se a copia local estiver corrompida.
+  }
+  return [...examples, ...enrolled].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+}
+
+/** Alteracoes administrativas sao locais e nao sincronizam com outros navegadores. */
+export function persistDemoAdminStudents(students: AdminStudent[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(ADMIN_STUDENTS_KEY, JSON.stringify(students));
 }
 
 /** Credenciais do painel administrativo (MOCK). No backend real: hash + MFA. */

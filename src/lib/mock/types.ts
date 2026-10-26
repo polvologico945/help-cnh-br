@@ -23,6 +23,8 @@ export type AdminStudent = {
   cpf: string;
   progress: number;
   service: ServiceKey;
+  instructorName?: string | null;
+  source?: "exemplo" | "navegador";
 };
 
 export const SERVICES: Record<
@@ -39,12 +41,12 @@ export const SERVICES: Record<
     label: "Inclusão de Categoria",
     description: "Adicione novas categorias à CNH que você já possui.",
     categories: ["A", "B", "C", "D", "E"],
-    requiresQr: false,
+    requiresQr: true,
   },
   AVULSAS: {
     label: "Aulas Avulsas",
     description: "Aulas extras de direção para ganhar confiança ao volante.",
     categories: ["A", "B", "C", "D", "E"],
-    requiresQr: false,
+    requiresQr: true,
   },
 };

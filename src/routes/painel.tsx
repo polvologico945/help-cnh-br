@@ -1,27 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { CheckCircle2, LockKeyhole, LogOut, Route as RouteIcon, ShieldCheck } from "lucide-react";
+import { useEffect } from "react";
 import { GearShifter } from "@/components/GearShifter";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { QrLinkPanel } from "@/components/QrLinkPanel";
 import { SiteFooter } from "@/components/SiteFooter";
-import { mockSocketOnLink } from "@/lib/mock/api";
+import { StudentWorkspace } from "@/components/StudentWorkspace";
 import { SERVICES, type Category, type ServiceKey } from "@/lib/mock/types";
 import { patchUser, setUser, useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/painel")({
   head: () => ({
     meta: [
-      { title: "Meu painel — ViaSegura" },
-      {
-        name: "description",
-        content:
-          "Acompanhe seu progresso, escolha o serviço de habilitação e vincule-se ao seu instrutor pelo QR Code.",
-      },
-      { property: "og:title", content: "Meu painel — ViaSegura" },
-      {
-        property: "og:description",
-        content: "Progresso das aulas, categoria escolhida e vínculo com instrutor em tempo real.",
-      },
+      { title: "Meu espaço — ViaSegura" },
+      { name: "description", content: "Aprendizado de direção, vínculo com instrutor e percurso virtual." },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: PainelPage,
@@ -30,154 +23,94 @@ export const Route = createFileRoute("/painel")({
 function PainelPage() {
   const navigate = useNavigate();
   const { user, hydrated } = useSession();
-  const [socketInstructor, setSocketInstructor] = useState<string | null>(null);
 
   useEffect(() => {
     if (hydrated && !user) navigate({ to: "/", replace: true });
   }, [hydrated, user, navigate]);
 
-  useEffect(() => {
-    return mockSocketOnLink((payload) => setSocketInstructor(payload.instructorName));
-  }, []);
-
   if (!hydrated || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <GearShifter activeGear={1} label="Carregando" />
-      </div>
-    );
+    return <div className="flex min-h-screen items-center justify-center bg-background">
+      <GearShifter activeGear={1} label="Carregando" />
+    </div>;
   }
 
   const service = user.service;
-  const needsQr = service ? SERVICES[service].requiresQr : false;
-  const locked = needsQr && !user.instructorName;
+  const linked = Boolean(user.linkedInstructorId && user.instructorName);
 
   function confirmOnboarding(selected: ServiceKey, category: Category) {
-    patchUser({ service: selected, category, progress: 8 });
+    patchUser({ service: selected, category, progress: 0 });
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary font-display text-sm text-primary-foreground">
-              VS
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/20 text-primary">
+              <RouteIcon className="h-6 w-6" />
             </div>
             <div>
-              <p className="font-display text-sm leading-tight">ViaSegura</p>
+              <p className="font-display text-lg font-semibold leading-tight">ViaSegura</p>
               <p className="text-xs text-muted-foreground">Olá, {user.name.split(" ")[0]}</p>
             </div>
           </div>
-          <button
-            className="btn-ghost px-4 py-2 text-sm hover:bg-white/12"
-            onClick={() => {
-              setUser(null);
-              navigate({ to: "/", replace: true });
-            }}
-          >
-            Sair
+          <button type="button" className="btn-ghost px-4 py-2 text-sm"
+            onClick={() => { setUser(null); navigate({ to: "/", replace: true }); }}>
+            <LogOut className="h-4 w-4" /> Sair
           </button>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8">
-        <section className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Serviço" value={service ? SERVICES[service].label : "—"} />
-          <StatCard label="Categoria" value={user.category ?? "—"} accent />
-          <StatCard label="Instrutor" value={user.instructorName ?? "Aguardando vínculo"} />
-        </section>
+      <main className="mx-auto w-full max-w-6xl flex-1 space-y-7 px-5 py-8 sm:py-10">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-caption text-accent">Área do aluno</p>
+            <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
+              {linked ? "Seu espaço de aprendizagem" : "Prepare seu primeiro acesso"}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {service ? `${SERVICES[service].label} · Categoria ${user.category ?? "não informada"}` : "Escolha seu serviço e sua categoria para começar."}
+            </p>
+          </div>
+          <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold ${linked
+            ? "border-primary/40 bg-primary/10 text-foreground"
+            : "border-accent/30 bg-accent/10 text-accent"}`}>
+            {linked ? <CheckCircle2 className="h-4 w-4" /> : <LockKeyhole className="h-4 w-4" />}
+            {linked ? "Instrutor vinculado" : "Aguardando instrutor"}
+          </span>
+        </div>
 
-        <section className="mt-6 rounded-2xl border border-border bg-card/60 p-6">
-          <div className="flex items-center justify-between">
-            <p className="font-display text-lg">Progresso do processo</p>
-            <p className="font-display text-2xl text-accent">{user.progress}%</p>
-          </div>
-          <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-[width] duration-700"
-              style={{ width: `${user.progress}%` }}
-            />
-          </div>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {[
-              "Exame médico",
-              "Aulas teóricas",
-              "Prova teórica",
-              "Aulas práticas",
-              "Prova prática",
-            ].map((step, index) => (
-              <span
-                key={step}
-                className={`rounded-full border px-3 py-1.5 text-xs ${
-                  user.progress >= (index + 1) * 20
-                    ? "border-primary bg-primary/15 text-foreground"
-                    : "border-border text-muted-foreground"
-                }`}
-              >
-                {step}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {locked ? (
-          <section className="mt-8">
-            <QrLinkPanel
-              studentName={user.name}
-              onLinked={(payload) =>
-                patchUser({
-                  instructorName: payload.instructorName,
-                  linkedInstructorId: payload.instructorId,
-                  progress: Math.max(user.progress, 22),
-                })
-              }
-            />
+        {!service ? (
+          <section className="rounded-3xl border border-border bg-card/70 p-8 text-center">
+            <p className="text-muted-foreground">A seleção de serviço é necessária para continuar.</p>
           </section>
+        ) : linked ? (
+          <StudentWorkspace user={user} />
         ) : (
-          <section className="mt-8 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-border bg-card/60 p-6">
-              <p className="text-xs uppercase tracking-[0.35em] text-accent">Próxima aula</p>
-              <h2 className="mt-2 text-2xl">Direção defensiva — módulo 3</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {user.instructorName
-                  ? `Com ${user.instructorName}, tela liberada via WebSocket.`
-                  : "Conteúdo liberado para o seu serviço."}
-              </p>
-              <button
-                className="btn-accent mt-5 hover:-translate-y-0.5"
-                onClick={() => patchUser({ progress: Math.min(100, user.progress + 12) })}
-              >
-                Concluir etapa
-              </button>
-            </div>
-            <div className="flex items-center justify-center rounded-2xl border border-border bg-card/60 p-6">
-              <div className="scale-90">
-                <GearShifter activeGear={0} label="Treine o câmbio" />
+          <>
+            <div className="flex items-start gap-3 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-sm">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+              <div>
+                <p className="font-semibold">Seu conteúdo ainda está protegido nesta demonstração</p>
+                <p className="mt-1 text-muted-foreground">
+                  A página de aprendizagem aparece somente depois da confirmação do vínculo por quem abrir o convite de instrutor.
+                </p>
               </div>
             </div>
-          </section>
+            <QrLinkPanel
+              studentId={user.id}
+              studentName={user.name}
+              onLinked={(confirmation) => patchUser({
+                instructorName: confirmation.instructorName,
+                linkedInstructorId: confirmation.instructorId,
+              })}
+            />
+          </>
         )}
-
-        {socketInstructor ? (
-          <p className="mt-6 rounded-xl border border-primary/60 bg-primary/15 px-4 py-3 text-sm">
-            Vínculo confirmado: <strong>{socketInstructor}</strong> agora acompanha o seu processo.
-          </p>
-        ) : null}
       </main>
 
       {!service ? <OnboardingModal onConfirm={confirmOnboarding} /> : null}
-
       <SiteFooter />
-    </div>
-  );
-}
-
-function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card/60 p-5">
-      <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">{label}</p>
-      <p className={`mt-2 font-display text-xl ${accent ? "text-accent" : ""}`}>{value}</p>
     </div>
   );
 }
