@@ -6,7 +6,7 @@ import { z } from "zod";
 const tokenSchema = z.string().uuid();
 
 export const issueDemoInvitation = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({ studentId: z.string().uuid(), studentName: z.string().min(2).max(120) }),
   )
   .handler(async ({ data }) => {
@@ -15,21 +15,21 @@ export const issueDemoInvitation = createServerFn({ method: "POST" })
   });
 
 export const inspectDemoInvitation = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ token: tokenSchema }))
+  .validator(z.object({ token: tokenSchema }))
   .handler(async ({ data }) => {
     const { inspectInvitation } = await import("./linking-store.server");
     return inspectInvitation(data.token);
   });
 
 export const getDemoInvitationStatus = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ token: tokenSchema, studentId: z.string().uuid() }))
+  .validator(z.object({ token: tokenSchema, studentId: z.string().uuid() }))
   .handler(async ({ data }) => {
     const { invitationStatus } = await import("./linking-store.server");
     return invitationStatus(data.token, data.studentId);
   });
 
 export const approveDemoInvitation = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({ token: tokenSchema, instructorName: z.string().trim().min(3).max(80) }),
   )
   .handler(async ({ data }) => {

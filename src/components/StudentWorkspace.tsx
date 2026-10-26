@@ -12,7 +12,7 @@ import {
   Route,
   ShieldCheck,
   Sparkles,
-  SteeringWheel,
+  CarFront,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GearShifter } from "@/components/GearShifter";
@@ -46,7 +46,7 @@ const MODULES = [
 const NAV: Array<{ id: Page; label: string; icon: typeof Compass }> = [
   { id: "inicio", label: "Início", icon: Compass },
   { id: "percurso", label: "Percurso virtual", icon: Route },
-  { id: "preparacao", label: "Preparação", icon: SteeringWheel },
+  { id: "preparacao", label: "Preparação", icon: CarFront },
   { id: "evolucao", label: "Minha evolução", icon: ClipboardList },
   { id: "caderno", label: "Caderno de bordo", icon: NotebookPen },
 ];
@@ -145,7 +145,7 @@ export function StudentWorkspace({ user }: { user: StudentUser }) {
               onClick={() => setPage("percurso")}
             />
             <FeatureCard
-              icon={SteeringWheel}
+              icon={CarFront}
               title="Treino pré-aula"
               text="Revise os comandos do veículo e hábitos de observação."
               label="Explorar agora"
