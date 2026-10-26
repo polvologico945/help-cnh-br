@@ -86,7 +86,7 @@ const dist = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 const nearestColIndex = (x: number) => {
   let best = 0;
   COLS.forEach((c, i) => {
-    if (Math.abs(x - c) < Math.abs(x - COLS[best])) best = i;
+    if (Math.abs(x - c) < Math.abs(x - (COLS[best] ?? COLS[1]))) best = i;
   });
   return best;
 };
@@ -117,7 +117,7 @@ function route(from: Point, to: Point): Point[] {
  */
 function dragAlongGate(start: Point, target: Point): Point {
   const STEP = 4;
-  const lane = COLS[nearestColIndex(target.x)];
+  const lane = COLS[nearestColIndex(target.x)] ?? COLS[1];
   const targetOnNeutral = Math.abs(target.y - MID) < 12;
   let cur = { ...start };
 
@@ -140,7 +140,7 @@ function dragAlongGate(start: Point, target: Point): Point {
       }
     } else {
       // Dentro de uma coluna: só vertical
-      const col = COLS[nearestColIndex(cur.x)];
+      const col = COLS[nearestColIndex(cur.x)] ?? COLS[1];
       const gy = near(col, lane) && !targetOnNeutral ? clamp(target.y, TOP, BOT) : MID;
       let ny = cur.y + clamp(gy - cur.y, -STEP, STEP);
       if ((cur.y - MID) * (ny - MID) < 0) ny = MID; // para no neutro para poder virar
@@ -156,7 +156,7 @@ function dragAlongGate(start: Point, target: Point): Point {
 function settle(p: Point): Gear {
   if (Math.abs(p.y - MID) > 20) {
     const i = nearestColIndex(p.x);
-    return p.y < MID ? TOP_GEARS[i] : BOT_GEARS[i];
+    return p.y < MID ? (TOP_GEARS[i] ?? "1") : (BOT_GEARS[i] ?? "2");
   }
   return "N";
 }
@@ -224,6 +224,7 @@ export function GearShifter({
 
       const tick = (now: number) => {
         const to = legs[leg];
+        if (!to) return;
         if (start === null) {
           start = now;
           duration = Math.max(110, (msPerStep * dist(from, to)) / 46);
@@ -278,7 +279,7 @@ export function GearShifter({
       if (draggingRef.current) return;
       if (Date.now() - lastInteraction.current < resumeAfter) return;
       stepRef.current = (stepRef.current + 1) % LOADING_SEQUENCE.length;
-      shift(LOADING_SEQUENCE[stepRef.current], false);
+      shift(LOADING_SEQUENCE[stepRef.current] ?? "N", false);
     }, interval);
     return () => window.clearInterval(id);
   }, [auto, interval, resumeAfter, shift]);
@@ -336,8 +337,8 @@ export function GearShifter({
     if (["1", "2", "3", "4", "5", "R", "N"].includes(key)) next = key as Gear;
     const i = KEY_ORDER.indexOf(currentRef.current);
     if (e.key === "ArrowUp" || e.key === "ArrowRight")
-      next = KEY_ORDER[Math.min(i + 1, KEY_ORDER.length - 1)];
-    if (e.key === "ArrowDown" || e.key === "ArrowLeft") next = KEY_ORDER[Math.max(i - 1, 0)];
+      next = KEY_ORDER[Math.min(i + 1, KEY_ORDER.length - 1)] ?? "N";
+    if (e.key === "ArrowDown" || e.key === "ArrowLeft") next = KEY_ORDER[Math.max(i - 1, 0)] ?? "N";
     if (next) {
       e.preventDefault();
       shift(next, true);
@@ -401,12 +402,12 @@ export function GearShifter({
             fill={`url(#${uid}-plate)`}
             stroke="rgba(255,255,255,0.08)"
           />
-          {[
+          {([
             [30, 30],
             [170, 30],
             [30, 170],
             [170, 170],
-          ].map(([cx, cy]) => (
+          ] as const).map(([cx, cy]) => (
             <g key={`${cx}-${cy}`}>
               <circle cx={cx} cy={cy} r={3.5} fill="#0b0b0d" stroke="rgba(255,255,255,0.12)" />
               <path

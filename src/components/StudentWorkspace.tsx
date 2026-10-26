@@ -234,7 +234,7 @@ export function StudentWorkspace({ user }: { user: StudentUser }) {
             <p className="text-caption self-start text-accent">Exploração interativa</p>
             <h3 className="mt-2 self-start text-lg font-bold">Conheça o câmbio</h3>
             <div className="mt-4">
-              <GearShifter activeGear={0} label="Treino do câmbio" />
+              <GearShifter autoPlay={false} label="Treino do câmbio" />
             </div>
             <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
               Visualização didática. Não substitui a prática acompanhada de um instrutor.

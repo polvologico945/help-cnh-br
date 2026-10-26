@@ -34,7 +34,7 @@ function PainelPage() {
   if (!hydrated || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <GearShifter activeGear={1} label="Carregando" />
+        <GearShifter label="Carregando" />
       </div>
     );
   }
