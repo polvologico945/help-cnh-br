@@ -50,7 +50,12 @@ type Point = { x: number; y: number };
 
 // ---------- Geometria (viewBox 200x200) ----------
 const COLS = [60, 100, 140] as const;
-const SCREW_POSITIONS = [[30, 30], [170, 30], [30, 170], [170, 170]] as const;
+const SCREW_POSITIONS = [
+  [30, 30],
+  [170, 30],
+  [30, 170],
+  [170, 170],
+] as const;
 const TOP = 54;
 const MID = 100; // linha do ponto morto
 const BOT = 146;
