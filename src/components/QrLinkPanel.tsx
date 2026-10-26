@@ -1,206 +1,175 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { CheckCircle2, ClipboardCopy, Clock3, QrCode, RefreshCw, ScanLine, ShieldAlert } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import { useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { emitMockSocketLink, scanQrCode } from "@/lib/mock/api";
-import type { Role } from "@/lib/mock/types";
+import { getDemoInvitationStatus, issueDemoInvitation } from "@/lib/linking";
 
-import { GearShifter } from "./GearShifter";
-
-const QR_SIZE = 21;
-const TOKEN_TTL_MS = 120_000;
-const READER_ROLES: Role[] = ["INSTRUCTOR", "STUDENT", "ADMIN"];
-
-/** Matriz determinística a partir do token — visual de QR Code, sem dependências. */
-function useQrMatrix(token: string, size = QR_SIZE) {
-  return useMemo(() => {
-    const cells: boolean[] = [];
-    let hash = 2166136261;
-    for (const ch of token) {
-      hash ^= ch.charCodeAt(0);
-      hash = Math.imul(hash, 16777619);
-    }
-    for (let i = 0; i < size * size; i += 1) {
-      hash ^= hash << 13;
-      hash ^= hash >>> 17;
-      hash ^= hash << 5;
-      cells.push((hash >>> 0) % 100 < 46);
-    }
-    return cells;
-  }, [token, size]);
-}
-
-/** Os 3 quadrados de posicionamento (cantos) de um QR Code. */
-function isFinder(row: number, col: number, size: number) {
-  const inBox = (r0: number, c0: number) => row >= r0 && row < r0 + 7 && col >= c0 && col < c0 + 7;
-  return inBox(0, 0) || inBox(0, size - 7) || inBox(size - 7, 0);
-}
-
-function finderOn(row: number, col: number) {
-  const r = row % 7;
-  const c = col % 7;
-  const border = r === 0 || r === 6 || c === 0 || c === 6;
-  const center = r >= 2 && r <= 4 && c >= 2 && c <= 4;
-  return border || center;
-}
+type LinkConfirmation = { instructorName: string; instructorId: string };
 
 export function QrLinkPanel({
+  studentId,
   studentName,
   onLinked,
 }: {
+  studentId: string;
   studentName: string;
-  onLinked: (payload: { instructorName: string; instructorId: string }) => void;
+  onLinked: (payload: LinkConfirmation) => void;
 }) {
-  const [token, setToken] = useState("");
-  const [readerRole, setReaderRole] = useState<Role>("INSTRUCTOR");
-  const [error, setError] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
-  const mounted = useRef(true);
+  const [invite, setInvite] = useState<{ token: string; expiresAt: number } | null>(null);
+  const [origin, setOrigin] = useState("");
+  const [remaining, setRemaining] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const linkedRef = useRef(false);
 
   useEffect(() => {
-    mounted.current = true;
-    // UUID temporário: no backend real seria emitido pelo servidor com TTL curto,
-    // assinado e de uso único (one-time token) para impedir replay.
-    setToken(crypto.randomUUID());
-    const interval = window.setInterval(() => setToken(crypto.randomUUID()), TOKEN_TTL_MS);
-    return () => {
-      mounted.current = false;
-      window.clearInterval(interval);
-    };
+    setOrigin(window.location.origin);
   }, []);
 
-  const cells = useQrMatrix(token || "init", QR_SIZE);
+  useEffect(() => {
+    let disposed = false;
+    setBusy(true);
+    void issueDemoInvitation({ data: { studentId, studentName } })
+      .then((result) => { if (!disposed) { setInvite(result); setError(""); } })
+      .catch(() => { if (!disposed) setError("Não foi possível criar o convite."); })
+      .finally(() => { if (!disposed) setBusy(false); });
+    return () => { disposed = true; };
+  }, [studentId, studentName]);
 
-  async function handleScan() {
-    if (!token || scanning) return;
-    setError(null);
-    setScanning(true);
-    try {
-      const result = await scanQrCode({ token, readerRole });
-      if (!mounted.current) return;
-      if (!result.ok) {
-        setError(result.message);
-        return;
+  useEffect(() => {
+    if (!invite) return;
+    const countdown = () => setRemaining(Math.max(0, Math.ceil((invite.expiresAt - Date.now()) / 1000)));
+    countdown();
+    const timer = window.setInterval(countdown, 1000);
+    return () => window.clearInterval(timer);
+  }, [invite]);
+
+  useEffect(() => {
+    if (!invite) return;
+    let pending = false;
+    let disposed = false;
+    const check = async () => {
+      if (pending || linkedRef.current) return;
+      pending = true;
+      try {
+        const response = await getDemoInvitationStatus({
+          data: { studentId, token: invite.token },
+        });
+        if (!disposed && response.status === "approved" && !linkedRef.current) {
+          linkedRef.current = true;
+          onLinked({
+            instructorId: response.instructorId,
+            instructorName: response.instructorName,
+          });
+        }
+      } catch {
+        if (!disposed) setError("Sem conexão com o servidor. O vínculo ainda não foi confirmado.");
+      } finally {
+        pending = false;
       }
-      const payload = { instructorName: result.instructorName, instructorId: result.instructorId };
-      emitMockSocketLink(payload);
-      onLinked(payload);
+    };
+    void check();
+    const timer = window.setInterval(() => void check(), 2400);
+    return () => { disposed = true; window.clearInterval(timer); };
+  }, [invite, studentId, onLinked]);
+
+  async function regenerate() {
+    setError("");
+    setBusy(true);
+    setCopied(false);
+    try {
+      setInvite(await issueDemoInvitation({ data: { studentId, studentName } }));
     } catch {
-      if (mounted.current) setError("Não foi possível ler o QR Code. Tente novamente.");
+      setError("Não foi possível renovar o convite. Tente novamente.");
     } finally {
-      if (mounted.current) setScanning(false);
+      setBusy(false);
+    }
+  }
+
+  const url = invite && origin ? `${origin}/instrutor?convite=${encodeURIComponent(invite.token)}` : "";
+  const expired = !invite || remaining <= 0;
+
+  async function copyLink() {
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      setError("Não foi possível copiar automaticamente. Use o endereço exibido abaixo.");
     }
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {/* QR Code do aluno */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-9">
-        <p className="text-caption text-brand-yellow">Vínculo com instrutor</p>
-        <h2 className="mt-3 font-display text-3xl leading-tight text-foreground">
-          Mostre este QR Code ao seu instrutor
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Token temporário de <span className="font-semibold text-foreground">{studentName}</span>,
-          renovado a cada 2 minutos.
+    <section className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]" aria-label="Vínculo com instrutor">
+      <div className="rounded-3xl border border-border bg-card/80 p-6 shadow-elevated sm:p-8">
+        <p className="text-caption text-accent">Etapa obrigatória</p>
+        <h2 className="mt-3 text-2xl font-bold sm:text-3xl">Conecte-se ao seu instrutor</h2>
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+          Peça ao instrutor para ler este QR Code com a câmera do celular. A confirmação
+          dele é necessária antes de abrir seu espaço de aprendizagem.
         </p>
-
-        <div className="mt-7 flex justify-center">
-          <div className="rounded-2xl bg-white p-4 shadow-glow-green">
-            <div
-              className="grid gap-[2px]"
-              style={{ gridTemplateColumns: `repeat(${QR_SIZE}, 10px)` }}
-              role="img"
-              aria-label="QR Code de vínculo"
-            >
-              {cells.map((filled, index) => {
-                const row = Math.floor(index / QR_SIZE);
-                const col = index % QR_SIZE;
-                const on = isFinder(row, col, QR_SIZE) ? finderOn(row, col) : filled;
-                return (
-                  <span
-                    key={index}
-                    className="h-[10px] w-[10px] rounded-[2px]"
-                    style={{ background: on ? "#050a18" : "transparent" }}
-                  />
-                );
-              })}
-            </div>
+        <div className="my-7 flex justify-center">
+          <div className="rounded-2xl bg-white p-4 shadow-lg" aria-label="Convite para o instrutor">
+            {url && !expired ? (
+              <QRCodeSVG value={url} size={216} marginSize={1} level="M" />
+            ) : (
+              <div className="flex h-[216px] w-[216px] flex-col items-center justify-center gap-3 text-center text-slate-700">
+                <QrCode className="h-12 w-12" />
+                <span className="text-sm">{busy ? "Gerando convite..." : "Convite expirado"}</span>
+              </div>
+            )}
           </div>
         </div>
-
-        <p className="mt-4 break-all text-center font-mono text-xs text-muted-foreground">
-          {token || "Gerando token..."}
-        </p>
-      </div>
-
-      {/* Simulador de leitura */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-9">
-        <p className="text-caption text-brand-yellow">Simulador de leitura</p>
-        <h3 className="mt-3 font-display text-2xl leading-tight text-foreground">
-          Quem está lendo o QR Code?
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Somente a role INSTRUCTOR tem permissão. Qualquer outra role recebe 403.
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-2">
-          {READER_ROLES.map((role) => {
-            const selected = readerRole === role;
-            return (
-              <button
-                key={role}
-                type="button"
-                aria-pressed={selected}
-                disabled={scanning}
-                onClick={() => {
-                  setReaderRole(role);
-                  setError(null);
-                }}
-                className={`h-11 rounded-xl border px-4 text-sm font-semibold transition-all duration-300 disabled:opacity-50 ${
-                  selected
-                    ? "border-brand-yellow bg-brand-yellow text-black"
-                    : "border-border/60 bg-white/5 text-foreground hover:-translate-y-0.5 hover:border-brand-yellow/70"
-                }`}
-              >
-                {role}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Clock3 className="h-4 w-4" />
+            {expired ? "Prazo encerrado" : `Validade: ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <ScanLine className="h-4 w-4" /> Leitura pela câmera do instrutor
+          </span>
         </div>
-
-        <Button
-          variant="hero"
-          size="lg"
-          className="mt-7 w-full"
-          disabled={scanning || !token}
-          onClick={handleScan}
-        >
-          {scanning ? "Lendo QR Code..." : "Simular leitura"}
-        </Button>
-
-        {error ? (
-          <p
-            role="alert"
-            className="mt-4 rounded-xl border border-destructive/50 bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground"
-          >
-            {error}
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          <button type="button" className="btn-primary" onClick={regenerate} disabled={busy}>
+            <RefreshCw className="h-4 w-4" /> Gerar novo QR Code
+          </button>
+          <button type="button" className="btn-ghost" onClick={copyLink} disabled={!url || expired}>
+            {copied ? <CheckCircle2 className="h-4 w-4" /> : <ClipboardCopy className="h-4 w-4" />}
+            {copied ? "Copiado" : "Copiar convite"}
+          </button>
+        </div>
+        {url ? <p className="mt-4 break-all text-center text-xs text-muted-foreground">{url}</p> : null}
+        {error ? <p role="alert" className="mt-4 text-sm text-destructive-foreground">{error}</p> : null}
+      </div>
+      <div className="space-y-5">
+        <div className="rounded-3xl border border-border bg-card/70 p-6 sm:p-8">
+          <p className="text-caption text-accent">Como funciona</p>
+          <ol className="mt-5 space-y-5">
+            {[
+              ["01", "Mostre o QR Code", "Abra esta tela perto do instrutor escolhido."],
+              ["02", "Ele verifica o convite", "O celular abre a página de confirmação do ViaSegura."],
+              ["03", "Acesse seu espaço", "Após a confirmação, este painel é liberado automaticamente."],
+            ].map(([step, title, description]) => (
+              <li key={step} className="flex gap-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 font-display text-sm text-primary">{step}</span>
+                <div>
+                  <p className="font-semibold">{title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div className="rounded-2xl border border-accent/30 bg-accent/10 p-5 text-sm">
+          <div className="flex items-center gap-2 font-semibold"><ShieldAlert className="h-5 w-5" /> Protótipo funcional</div>
+          <p className="mt-2 leading-relaxed text-muted-foreground">
+            A confirmação funciona entre dispositivos ligados ao mesmo servidor, mas ainda
+            não autentica a identidade do instrutor e não sobrevive à reinicialização do servidor.
+            Não use para alunos reais.
           </p>
-        ) : null}
-
-        {scanning ? (
-          <div className="mt-7 flex justify-center">
-            <GearShifter size={160} interval={700} label="Conectando" />
-          </div>
-        ) : null}
-
-        <p className="mt-7 text-xs text-muted-foreground">
-          Mock de WebSocket: ao ler com sucesso, um evento destrava a tela do aluno com o nome do
-          instrutor. No backend real, canal autenticado por JWT (cookie HttpOnly) e autorização da
-          role validada no servidor.
-        </p>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
-
-export default QrLinkPanel;
