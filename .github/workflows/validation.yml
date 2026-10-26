@@ -24,5 +24,7 @@ jobs:
         run: npm ci
       - name: Compilar aplicacao
         run: npm run build
+      - name: Conferir tipos TypeScript
+        run: npx tsc --noEmit
       - name: Verificar codigo
         run: npm run lint
