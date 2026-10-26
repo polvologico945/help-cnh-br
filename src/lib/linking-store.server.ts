@@ -62,7 +62,8 @@ export function approveInvitation(token: string, instructorName: string) {
   prune();
   const invitation = invitations.get(token);
   if (!invitation) return { ok: false as const, message: "Convite expirado ou desconhecido." };
-  if (invitation.approvedBy) return { ok: false as const, message: "Este convite ja foi utilizado." };
+  if (invitation.approvedBy)
+    return { ok: false as const, message: "Este convite ja foi utilizado." };
   // Identidade de DEMONSTRACAO. Nao e um cadastro de instrutor verificado.
   invitation.approvedBy = { instructorId: randomUUID(), instructorName };
   return { ok: true as const, studentName: invitation.studentName };
