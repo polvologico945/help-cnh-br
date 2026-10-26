@@ -1,10 +1,9 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Diretrizes de desenvolvimento — ViaSegura
+
+- Trabalhe em uma branch de funcionalidade e preserve a `main` até a revisão.
+- Não remova recursos de navegação, responsividade, acessibilidade ou instalação sem validação.
+- Respeite a arquitetura atual: React, TypeScript, TanStack Start/Router, Vite, Tailwind CSS e Nitro.
+- Preserve a entrada SSR personalizada em `src/server.ts` e o tratamento de erros.
+- Diferencie recursos simulados de funcionalidades prontas para produção.
+- Para passeios virtuais, não invente elementos físicos do ambiente e diferencie medições de estimativas.
+- Prefira alterações pequenas, reversíveis e testadas; execute `npm run build` e `npm run lint` quando disponíveis.

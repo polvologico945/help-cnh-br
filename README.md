@@ -1,24 +1,48 @@
-# Aprovando
+# ViaSegura — Educação de Trânsito
 
-Implement exactly the screenshot and nothing else
+Aplicação web responsiva, preparada para instalação como PWA, para experiências educacionais de trânsito e acompanhamento de aulas.
 
-This project was built with [Lovable](https://lovable.dev).
+## Tecnologias
 
-## Build with Lovable
+- React 19 e TypeScript
+- TanStack Start / TanStack Router e TanStack Query
+- Vite 8 (desenvolvimento e compilação)
+- Tailwind CSS 4 e componentes Radix UI
+- Nitro (servidor e saída de produção)
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/fadc31e6-2f00-4a73-aeaf-a6db31dcaa16).
+O projeto usa ferramentas abertas e uma configuração de compilação independente.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## Como executar
 
-## Development
+Requisitos: Node.js compatível com Vite 8 e npm.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+```bash
+git clone https://github.com/polvologico945/help-cnh-br.git
+cd help-cnh-br
+npm ci
 npm run dev
 ```
+
+O terminal informará o endereço do servidor de desenvolvimento.
+
+## Verificações e produção
+
+```bash
+npm run lint
+npm run build
+npm run preview
+```
+
+A compilação usa TanStack Start com Nitro. Para hospedar, configure o destino de implantação apropriado ao seu servidor ou provedor. A branch principal deve ser atualizada somente após a validação das alterações.
+
+## Estrutura principal
+
+- `src/routes/`: páginas e roteamento.
+- `src/components/`: componentes de interface.
+- `src/lib/`: utilitários e protótipos de serviços.
+- `src/server.ts`: entrada do servidor e tratamento de erros SSR.
+- `public/manifest.webmanifest`: informações de instalação do PWA.
+- `public/icons/`: ícones próprios da aplicação.
+- `vite.config.ts`: plugins diretos de compilação.
+
+**Estado atual:** o projeto contém serviços simulados no navegador, sem backend de produção. A presença de um manifesto PWA não garante funcionamento offline; isso depende de uma implementação e validação específicas de cache e Service Worker.
