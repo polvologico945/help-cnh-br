@@ -141,7 +141,10 @@ export function updateUser(user: StudentUser) {
 export async function scanQrCode(input: {
   token: string;
   readerRole: Role;
-}): Promise<{ ok: true; instructorId: string; instructorName: string } | { ok: false; status: 403; message: string }> {
+}): Promise<
+  | { ok: true; instructorId: string; instructorName: string }
+  | { ok: false; status: 403; message: string }
+> {
   await latency(700);
   if (input.readerRole !== "INSTRUCTOR") {
     console.warn("[mock:api] 403 Forbidden — role sem permissão para ler QR:", input.readerRole);
@@ -159,7 +162,10 @@ export function mockSocketOnLink(
   callback: (payload: { instructorName: string; instructorId: string }) => void,
 ) {
   const listener = (event: Event) => {
-    const detail = (event as CustomEvent).detail as { instructorName: string; instructorId: string };
+    const detail = (event as CustomEvent).detail as {
+      instructorName: string;
+      instructorId: string;
+    };
     callback(detail);
   };
   window.addEventListener("mock:ws:student-linked", listener);
@@ -172,14 +178,56 @@ export function emitMockSocketLink(payload: { instructorName: string; instructor
 }
 
 const SEED_STUDENTS: AdminStudent[] = [
-  { id: "s1", name: "Ana Beatriz Lopes", cpf: "529.982.247-25", progress: 82, service: "PRIMEIRA_HABILITACAO" },
-  { id: "s2", name: "Bruno Carvalho Dias", cpf: "390.533.447-05", progress: 47, service: "INCLUSAO" },
-  { id: "s3", name: "Carla Menezes Rocha", cpf: "111.444.777-35", progress: 96, service: "AVULSAS" },
-  { id: "s4", name: "Diego Ferreira Alves", cpf: "168.995.350-09", progress: 13, service: "PRIMEIRA_HABILITACAO" },
-  { id: "s5", name: "Eduarda Nunes Prado", cpf: "263.446.100-05", progress: 65, service: "INCLUSAO" },
-  { id: "s6", name: "Felipe Santana Lima", cpf: "298.880.150-05", progress: 34, service: "PRIMEIRA_HABILITACAO" },
+  {
+    id: "s1",
+    name: "Ana Beatriz Lopes",
+    cpf: "529.982.247-25",
+    progress: 82,
+    service: "PRIMEIRA_HABILITACAO",
+  },
+  {
+    id: "s2",
+    name: "Bruno Carvalho Dias",
+    cpf: "390.533.447-05",
+    progress: 47,
+    service: "INCLUSAO",
+  },
+  {
+    id: "s3",
+    name: "Carla Menezes Rocha",
+    cpf: "111.444.777-35",
+    progress: 96,
+    service: "AVULSAS",
+  },
+  {
+    id: "s4",
+    name: "Diego Ferreira Alves",
+    cpf: "168.995.350-09",
+    progress: 13,
+    service: "PRIMEIRA_HABILITACAO",
+  },
+  {
+    id: "s5",
+    name: "Eduarda Nunes Prado",
+    cpf: "263.446.100-05",
+    progress: 65,
+    service: "INCLUSAO",
+  },
+  {
+    id: "s6",
+    name: "Felipe Santana Lima",
+    cpf: "298.880.150-05",
+    progress: 34,
+    service: "PRIMEIRA_HABILITACAO",
+  },
   { id: "s7", name: "Gabriela Torres Sá", cpf: "457.213.680-08", progress: 58, service: "AVULSAS" },
-  { id: "s8", name: "Henrique Barbosa Pinto", cpf: "630.026.230-20", progress: 71, service: "INCLUSAO" },
+  {
+    id: "s8",
+    name: "Henrique Barbosa Pinto",
+    cpf: "630.026.230-20",
+    progress: 71,
+    service: "INCLUSAO",
+  },
 ];
 
 export function seedAdminStudents(): AdminStudent[] {

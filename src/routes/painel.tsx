@@ -100,20 +100,24 @@ function PainelPage() {
             />
           </div>
           <div className="mt-6 flex flex-wrap gap-2">
-            {["Exame médico", "Aulas teóricas", "Prova teórica", "Aulas práticas", "Prova prática"].map(
-              (step, index) => (
-                <span
-                  key={step}
-                  className={`rounded-full border px-3 py-1.5 text-xs ${
-                    user.progress >= (index + 1) * 20
-                      ? "border-primary bg-primary/15 text-foreground"
-                      : "border-border text-muted-foreground"
-                  }`}
-                >
-                  {step}
-                </span>
-              ),
-            )}
+            {[
+              "Exame médico",
+              "Aulas teóricas",
+              "Prova teórica",
+              "Aulas práticas",
+              "Prova prática",
+            ].map((step, index) => (
+              <span
+                key={step}
+                className={`rounded-full border px-3 py-1.5 text-xs ${
+                  user.progress >= (index + 1) * 20
+                    ? "border-primary bg-primary/15 text-foreground"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
+                {step}
+              </span>
+            ))}
           </div>
         </section>
 

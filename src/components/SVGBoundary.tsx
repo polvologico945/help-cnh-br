@@ -76,7 +76,16 @@ export function SVGBoundary() {
         {/* CNH estilizada */}
         <g className="float-card" transform="translate(1080 220) rotate(-6)">
           <rect width="260" height="164" rx="18" fill="url(#cnh)" opacity="0.95" />
-          <rect x="14" y="14" width="232" height="136" rx="12" fill="none" stroke="#FFDF00" strokeOpacity="0.7" />
+          <rect
+            x="14"
+            y="14"
+            width="232"
+            height="136"
+            rx="12"
+            fill="none"
+            stroke="#FFDF00"
+            strokeOpacity="0.7"
+          />
           <rect x="30" y="38" width="64" height="80" rx="8" fill="#e9eef2" opacity="0.85" />
           <circle cx="62" cy="66" r="16" fill="#0A31A6" opacity="0.6" />
           <path d="M38 112c6-18 42-18 48 0z" fill="#0A31A6" opacity="0.6" />
@@ -129,7 +138,13 @@ function Moto({ x, y, scale }: { x: number; y: number; scale: number }) {
       <circle cx="16" cy="42" r="5" fill="#8f979e" />
       <circle cx="72" cy="42" r="12" fill="#12151c" />
       <circle cx="72" cy="42" r="5" fill="#8f979e" />
-      <path d="M16 42 L36 24 H56 L72 42" stroke="url(#red)" strokeWidth="7" fill="none" strokeLinecap="round" />
+      <path
+        d="M16 42 L36 24 H56 L72 42"
+        stroke="url(#red)"
+        strokeWidth="7"
+        fill="none"
+        strokeLinecap="round"
+      />
       <path d="M34 24c6-8 18-8 24 0z" fill="url(#red)" />
       <rect x="28" y="16" width="16" height="6" rx="3" fill="#e9eef2" />
       <path d="M58 22 L68 12" stroke="#d8dee3" strokeWidth="4" strokeLinecap="round" />

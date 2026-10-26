@@ -43,7 +43,8 @@
 export const SECURITY_NOTES = [
   {
     title: "SQL Injection",
-    detail: "ORM com statements parametrizados + validação Zod + usuário de banco com privilégio mínimo.",
+    detail:
+      "ORM com statements parametrizados + validação Zod + usuário de banco com privilégio mínimo.",
   },
   {
     title: "XSS",

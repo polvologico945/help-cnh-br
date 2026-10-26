@@ -12,7 +12,6 @@ import type { ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { InstallPrompt } from "../components/InstallPrompt";
 
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -138,4 +137,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

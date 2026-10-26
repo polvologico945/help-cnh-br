@@ -31,8 +31,7 @@ function useQrMatrix(token: string, size = QR_SIZE) {
 
 /** Os 3 quadrados de posicionamento (cantos) de um QR Code. */
 function isFinder(row: number, col: number, size: number) {
-  const inBox = (r0: number, c0: number) =>
-    row >= r0 && row < r0 + 7 && col >= c0 && col < c0 + 7;
+  const inBox = (r0: number, c0: number) => row >= r0 && row < r0 + 7 && col >= c0 && col < c0 + 7;
   return inBox(0, 0) || inBox(0, size - 7) || inBox(size - 7, 0);
 }
 

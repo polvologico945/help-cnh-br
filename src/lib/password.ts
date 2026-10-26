@@ -20,9 +20,7 @@ export function validatePassword(password: string, cpf: string): string[] {
   }
 
   const isSequence = (dir: 1 | -1) =>
-    password
-      .split("")
-      .every((ch, i, arr) => i === 0 || Number(ch) === Number(arr[i - 1]) + dir);
+    password.split("").every((ch, i, arr) => i === 0 || Number(ch) === Number(arr[i - 1]) + dir);
 
   if (isSequence(1) || isSequence(-1)) {
     errors.push("A senha não pode ser uma sequência (ex: 123456 ou 654321).");

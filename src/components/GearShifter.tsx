@@ -335,7 +335,8 @@ export function GearShifter({
     let next: Gear | null = null;
     if (["1", "2", "3", "4", "5", "R", "N"].includes(key)) next = key as Gear;
     const i = KEY_ORDER.indexOf(currentRef.current);
-    if (e.key === "ArrowUp" || e.key === "ArrowRight") next = KEY_ORDER[Math.min(i + 1, KEY_ORDER.length - 1)];
+    if (e.key === "ArrowUp" || e.key === "ArrowRight")
+      next = KEY_ORDER[Math.min(i + 1, KEY_ORDER.length - 1)];
     if (e.key === "ArrowDown" || e.key === "ArrowLeft") next = KEY_ORDER[Math.max(i - 1, 0)];
     if (next) {
       e.preventDefault();

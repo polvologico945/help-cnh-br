@@ -155,7 +155,11 @@ function AdminPage() {
                           setSidebar({ mode: "edit", student });
                         }}
                       >
-                        <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="h-4 w-4 fill-current"
+                          aria-hidden="true"
+                        >
                           <path d="M12 5c-5 0-9 4.5-9 7s4 7 9 7 9-4.5 9-7-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2a2 2 0 100-4 2 2 0 000 4z" />
                         </svg>
                       </button>
@@ -164,7 +168,11 @@ function AdminPage() {
                         className="rounded-lg border border-border p-2 transition-colors hover:border-destructive hover:text-destructive"
                         onClick={() => setSidebar({ mode: "delete", student })}
                       >
-                        <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="h-4 w-4 fill-current"
+                          aria-hidden="true"
+                        >
                           <path d="M9 3h6l1 2h4v2H4V5h4l1-2zM6 9h12l-1 11a2 2 0 01-2 2H9a2 2 0 01-2-2L6 9zm4 2v9h1.5v-9H10zm3.5 0v9H15v-9h-1.5z" />
                         </svg>
                       </button>
